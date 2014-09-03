@@ -1,5 +1,4 @@
 <?php
-
 /**
  * AJAX Cross Domain (PHP) Proxy 0.8
  *    by Iacovos Constantinou (http://www.iacons.net)
@@ -43,8 +42,9 @@ $valid_requests = array(
 
 // do we need to check for password
 if (CSAJAX_PASSWD != False) {
-	if (hash('sha512', $_SERVER['HTTP_X_PROXY_PASSWD']) != CSAJAX_PASSWD || hash('sha512', $_SERVER['HTTP_X_PROXY_PASSWD']) != CSAJAX_PASSWD) {
-		csajax_debug_message( 'Invalid Password ' );
+	if ( hash('sha512', $_SERVER['HTTP_X_PROXY_PASSWD']) == CSAJAX_PASSWD || hash('sha512', $_POST['cspasswd']) == CSAJAX_PASSWD) {
+	} else {
+    	csajax_debug_message( 'Invalid Password' );
 		exit;
 	}
 }
