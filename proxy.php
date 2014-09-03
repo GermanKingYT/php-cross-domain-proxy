@@ -25,6 +25,13 @@ define( 'CSAJAX_FILTER_DOMAIN', false );
  */
 define( 'CSAJAX_DEBUG', false );
 
+/*
+ * Set a Password to protect access to the proxy.
+ * If False then it wont check for this
+ * Password should already be hashed in sha512
+ */
+define( 'CSAJAX_PASSWD', false );
+
 /**
  * A set of valid cross domain requests
  */
@@ -34,13 +41,21 @@ $valid_requests = array(
 
 /* * * STOP EDITING HERE UNLESS YOU KNOW WHAT YOU ARE DOING * * */
 
+// do we need to check for password
+if (CSAJAX_PASSWD != False) {
+	if (hash('sha512', $_SERVER['HTTP_X_PROXY_PASSWD']) != CSAJAX_PASSWD || hash('sha512', $_SERVER['HTTP_X_PROXY_PASSWD']) != CSAJAX_PASSWD) {
+		csajax_debug_message( 'Invalid Password ' );
+		exit;
+	}
+}
+
 // identify request headers
 $request_headers = array( );
 foreach ( $_SERVER as $key => $value ) {
 	if ( substr( $key, 0, 5 ) == 'HTTP_' ) {
 		$headername = str_replace( '_', ' ', substr( $key, 5 ) );
 		$headername = str_replace( ' ', '-', ucwords( strtolower( $headername ) ) );
-		if ( !in_array( $headername, array( 'Host', 'X-Proxy-Url' ) ) ) {
+		if ( !in_array( $headername, array( 'Host', 'X-Proxy-Url', 'X-Proxy-Passwd' ) ) ) {
 			$request_headers[] = "$headername: $value";
 		}
 	}
@@ -79,8 +94,11 @@ if ( isset( $_REQUEST['csurl'] ) ) {
 $p_request_url = parse_url( $request_url );
 
 // csurl may exist in GET request methods
-if ( is_array( $request_params ) && array_key_exists('csurl', $request_params ) )
+if ( is_array( $request_params ) && isset( $request_params['csurl'] ))
 	unset( $request_params['csurl'] );
+	
+if ( is_array( $request_params ) &&  || isset( $request_params['cspasswd'] ))
+	unset( $request_params['cspasswd'] );
 
 // ignore requests for proxy :)
 if ( preg_match( '!' . $_SERVER['SCRIPT_NAME'] . '!', $request_url ) || empty( $request_url ) || count( $p_request_url ) == 1 ) {
